@@ -8,7 +8,6 @@ namespace Astalo
         const string LoginPath = "/login";
         const string DoorOpeningPath = "/profiili/ovi";
         const string XPathForCsrfTokenInputElement = "//input[@name=\"_csrf_token\"]";
-        const string FailedLoginCharacteristic = "Email could not be found.";
         CookieContainer CookieContainer { get; set; }
         HttpClientHandler ClientHandler { get; set; }
         HttpClient Client { get; set; }
