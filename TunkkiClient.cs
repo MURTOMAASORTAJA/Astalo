@@ -62,11 +62,14 @@ namespace Astalo
             var uri = new Uri(new Uri(BaseUrl), DoorOpeningPath);
 
             var response = Client.GetAsync(uri).Result;
+            if (response.StatusCode == HttpStatusCode.Forbidden) {
+                throw new NotConnectedToKerdeWifiException();
+            }
             var responseDoc = new HtmlAgilityPack.HtmlDocument();
             responseDoc.Load(response.Content.ReadAsStream());
             var tokenNode = responseDoc.GetElementbyId("open_door__token");
             if (tokenNode == null) {
-                throw new InvalidOperationException("Couldn't find open door token element.");
+                throw new CantFindTokenElementException() { Element = "open_door__token"};
             }
             return tokenNode.Attributes["value"].Value;
         }
@@ -81,7 +84,9 @@ namespace Astalo
                 new KeyValuePair<string, string>("open_door[_token]", token)
             })).Result;
 
-            
+            if (response.StatusCode == HttpStatusCode.Forbidden) {
+                throw new NotConnectedToKerdeWifiException();
+            }
         }
 
         public string GetCsrfTokenFromLoginPage()
@@ -99,8 +104,20 @@ namespace Astalo
                 return csrfInput.Attributes["value"].Value;
             } else
             { 
-                throw new InvalidOperationException("Couldn't find <input> element that is assumed to contain the csrf token.");
+                throw new CantFindTokenElementException() { Element="XPathForCsrfTokenInputElement" };
             }
         }
     }
+
+    public class NotConnectedToKerdeWifiException : Exception {
+        public HttpResponseMessage? ResponseMessage { get; set; }
+
+        public NotConnectedToKerdeWifiException() {
+            ResponseMessage = null;
+        }
+    }
+    public class CantFindTokenElementException : Exception {
+        public string Element { get; set; } = "";
+    }
+
 }

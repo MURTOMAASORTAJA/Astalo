@@ -12,7 +12,7 @@ foreach (var kvp in kvpArgs) {
         case "opendoor":
         case "door":
             LoginProcedure();
-            client.OpenDoor(kvp.Value);
+            OpenDoor(kvp.Value);
             commandWasRun = true;
             break;
         case "login":
@@ -61,7 +61,12 @@ void LoginProcedure(bool verboseWhenSuccessful = false) {
         Environment.Exit(0); 
     }
 
-    client.Login(username, password);
+    try {
+        client.Login(username, password);
+    } catch (CantFindTokenElementException tokenEx) {
+        System.Console.WriteLine($"Couldn't find token (\"{tokenEx.Element}\") from login page.");
+        Environment.Exit(0);
+    }
 
     if (!client.IsLoggedIn())
     {
@@ -71,6 +76,15 @@ void LoginProcedure(bool verboseWhenSuccessful = false) {
         if (verboseWhenSuccessful) {
             System.Console.WriteLine("Login successful.");
         }
+    }
+}
+
+void OpenDoor(string message = "") {
+    try {
+        client.OpenDoor(message);
+    } catch (NotConnectedToKerdeWifiException) {
+        System.Console.WriteLine("Not connected to Kerde wifi.");
+        Environment.Exit(0);
     }
 }
 
