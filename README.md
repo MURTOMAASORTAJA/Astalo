@@ -4,7 +4,7 @@ A crossplatform CLI-app for interacting with Entropy Tunkki. Currently compatibl
 
 The application is self-contained, so running it *should* not need .NET 6.0 runtime. In case it does, install it to your computer. The rather large size of the executable file is because of the app being self-contained.
 
-### How to install and use
+### How to install
 1. Download the latest release of Astalo.
 2. Create a directory for configuration:
 ```bash
@@ -19,3 +19,13 @@ sudo nano /etc/astalo/astalo.conf
 user=youremail@here.com
 pass=SomethingSomething
 ```
+
+### How to use
+The application is meant to be run in terminal.
+Running the application with no arguments will print out quick guide listing all subcommands.
+
+Example for testing login credentials:
+`astalo testlogin`
+
+Example for opening Kerde door (requires Kerde wifi connection):
+`astalo door`
