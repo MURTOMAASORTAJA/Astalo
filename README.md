@@ -6,15 +6,19 @@ The application is self-contained, so running it *should* not require to have .N
 
 ### How to install
 1. Download the [latest release](https://github.com/MURTOMAASORTAJA/Astalo/releases/download/best-release-so-far/astalo) of Astalo.
-2. Create a directory for configuration:
+2. Enable execute permission on the astalo executable:
+```bash
+chmod +x astalo
+```
+3. Create a directory for configuration:
 ```bash
 sudo mkdir /etc/astalo
 ```
-3. Create and populate conf file with nano (or whatever editor you prefer):
+4. Create and populate conf file with nano (or whatever editor you prefer):
 ```bash
 sudo nano /etc/astalo/astalo.conf
 ```
-4. Copy-paste this into the file, change the stuff to correct values, save the file and quit editor:
+5. Copy-paste this into the file, change the stuff to correct values, save the file and quit editor:
 ```
 user=youremail@here.com
 pass=SomethingSomething
