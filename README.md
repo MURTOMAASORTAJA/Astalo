@@ -2,6 +2,8 @@
 
 A crossplatform CLI-app for interacting with Entropy Tunkki. Currently compatible only with Linux.
 
+The application is self-contained, so running it *should* not need .NET 6.0 runtime. In case it does, install it to your computer. The rather large size of the executable file is because of the app being self-contained.
+
 ### How to install and use
 1. Download the latest release of Astalo.
 2. Create a directory for configuration:
