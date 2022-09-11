@@ -44,8 +44,8 @@ namespace Astalo
         public bool IsLoggedIn()
         {
             // Here the client attempts to navigate to a page visible only for logged in users.
-            // Tunkki redirects unauthorized users to login page, so if response.RequestMessage.RequestUri
-            // is the Uri of the login page, session is not logged in.
+            // Tunkki tends to redirect unauthorized requests to login page, so if the final 
+            // response.RequestMessage.RequestUri is the Uri of the login page, session is not logged in.
 
             var uri = new Uri(new Uri(BaseUrl), "/yleiskatsaus/");
             var response = Client.GetAsync(uri).Result;
@@ -59,9 +59,30 @@ namespace Astalo
             return Client.GetAsync(uri).Result;
         }
 
-        public void OpenDoor()
-        {
+        private string GetOpenDoorToken() {
             var uri = new Uri(new Uri(BaseUrl), DoorOpeningPath);
+
+            var response = Client.GetAsync(uri).Result;
+            var responseDoc = new HtmlAgilityPack.HtmlDocument();
+            responseDoc.Load(response.Content.ReadAsStream());
+            var tokenNode = responseDoc.GetElementbyId("open_door__token");
+            if (tokenNode == null) {
+                throw new InvalidOperationException("Couldn't find open door token element.");
+            }
+            return tokenNode.Attributes["value"].Value;
+        }
+
+        public void OpenDoor(string message = "")
+        {
+            var token = GetOpenDoorToken();
+            var uri = new Uri(new Uri(BaseUrl), DoorOpeningPath);
+
+            var response = Client.PostAsync(uri, new FormUrlEncodedContent(new[] {
+                new KeyValuePair<string, string>("open_door[message]", message),
+                new KeyValuePair<string, string>("open_door[_token]", token)
+            })).Result;
+
+            
         }
 
         public string GetCsrfTokenFromLoginPage()
