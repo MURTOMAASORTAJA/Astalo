@@ -6,12 +6,17 @@ bool shouldExit = false;
 var kvpArgs = args.AsKeyValuePairs();
 var client = new TunkkiClient();
 bool commandWasRun = false;
+
 foreach (var kvp in kvpArgs) {
     switch (kvp.Key) {
         case "opendoor":
         case "door":
             LoginProcedure();
             client.OpenDoor(kvp.Value);
+            commandWasRun = true;
+            break;
+        case "login":
+            LoginProcedure(true);
             commandWasRun = true;
             break;
     }
@@ -23,8 +28,8 @@ if (!commandWasRun) {
 
 
 // ~ app exits here ~
-
-void LoginProcedure() {
+#region methods
+void LoginProcedure(bool verboseWhenSuccessful = false) {
     var username = "";
     var password = "";
 
@@ -62,10 +67,19 @@ void LoginProcedure() {
     {
         Console.WriteLine("Login failed.");
         Environment.Exit(0);
+    } else {
+        if (verboseWhenSuccessful) {
+            System.Console.WriteLine("Login successful.");
+        }
     }
 }
 
 void Man() {
+    var cmdInfos = new Dictionary<string, string>(); // title as key, description as value
+    cmdInfos.Add("opendoor (or \"door\")", "Opens Kerde door. Requires Kerde wifi connection.");
+    cmdInfos.Add("opendoor=\"my message here\"", "Opens the Kerde door with a message.");
+    cmdInfos.Add("login", "Logs in with the credentials provided in conf files or with cli args.");
+
     System.Console.WriteLine("Astalo");
     System.Console.WriteLine("---");
     System.Console.WriteLine("Usage:");
@@ -74,10 +88,12 @@ void Man() {
     System.Console.WriteLine("---");
     System.Console.WriteLine();
     System.Console.WriteLine("Commands:");
-    System.Console.WriteLine();
-    System.Console.WriteLine("opendoor (or \"door\")\nOpens Kerde door. Requires Kerde wifi connection.");
-    System.Console.WriteLine();
-    System.Console.WriteLine("opendoor=\"my message here\"\nOpens the Kerde door with a message.");
+    
+    foreach (var cmdInfo in cmdInfos) {
+        System.Console.WriteLine(cmdInfo.Key);
+        System.Console.WriteLine(cmdInfo.Value);
+        System.Console.WriteLine();
+    }
 }
 
 (string?, string?) GetUserAndPassFromFirstConfFileFound() {
@@ -125,3 +141,5 @@ void Man() {
 
     return (user, pass);
 }
+
+#endregion
