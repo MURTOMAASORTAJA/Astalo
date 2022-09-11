@@ -91,8 +91,10 @@ void OpenDoor(string message = "") {
 void Man() {
     var cmdInfos = new Dictionary<string, string>(); // title as key, description as value
     cmdInfos.Add("opendoor (or \"door\")", "Opens Kerde door. Requires Kerde wifi connection.");
-    cmdInfos.Add("opendoor=\"my message here\"", "Opens the Kerde door with a message.");
+    cmdInfos.Add("opendoor=\"my message here\"", "Opens the Kerde door with a message. Requires Kerde wifi connection.");
     cmdInfos.Add("login", "Logs in with the credentials provided in conf files or with cli args.");
+    cmdInfos.Add("user=USEREMAILHERE", "Sets username that will override any username possibly found from conf file.");
+    cmdInfos.Add("pass=PASSWORDHERE", "Sets password that will override any username possibly found from conf file.");
 
     System.Console.WriteLine("Astalo");
     System.Console.WriteLine("---");
