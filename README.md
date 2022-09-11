@@ -14,7 +14,7 @@ chmod +x astalo
 ```bash
 sudo mkdir /etc/astalo
 ```
-4. Create and populate conf file with nano (or whatever editor you prefer):
+4. Create a conf file with nano (or whatever editor you prefer):
 ```bash
 sudo nano /etc/astalo/astalo.conf
 ```
