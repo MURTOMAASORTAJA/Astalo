@@ -5,9 +5,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+    <RuntimeIdentifiers>linux-x64;win</RuntimeIdentifiers>
     <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>

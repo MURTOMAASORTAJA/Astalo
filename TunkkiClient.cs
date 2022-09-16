@@ -8,17 +8,53 @@ namespace Astalo
         const string LoginPath = "/login";
         const string DoorOpeningPath = "/profiili/ovi";
         const string XPathForCsrfTokenInputElement = "//input[@name=\"_csrf_token\"]";
-        CookieContainer CookieContainer { get; set; }
         HttpClientHandler ClientHandler { get; set; }
         HttpClient Client { get; set; }
 
+        private const int RetryTimes = 3;
+
         private string CsrfToken { get; set; } = "";
+
+        public double TimeoutSecondsPerRequest
+        {
+            get
+            {
+                return Client.Timeout.TotalSeconds;
+            }
+
+            set
+            {
+                Client.Timeout = new TimeSpan(0, 0, Convert.ToInt32(value));
+            }
+        }
+
+        private async Task<HttpResponseMessage> SendRetryAsync(HttpMethod method, Uri uri, HttpContent? content = null, bool retryAfterNonSuccessStatusCode = true)
+        {
+            var retryTimes = 0;
+            HttpResponseMessage? response = null;
+            while (retryTimes < RetryTimes)
+            {
+                response = await Client.SendAsync(new HttpRequestMessage(method, uri) { Content = content });
+                if (!response.IsSuccessStatusCode && !retryAfterNonSuccessStatusCode)
+                {
+                    break;
+                }
+                retryTimes++;
+            }
+
+            if (response == null)
+            {
+                throw new MaxRetriesException(uri);
+            }
+
+            return response;
+        }
 
         public TunkkiClient()
         {
-            CookieContainer = new CookieContainer();
-            ClientHandler = new HttpClientHandler() { CookieContainer = CookieContainer };
+            ClientHandler = new HttpClientHandler();
             Client = new HttpClient(ClientHandler);
+            TimeoutSecondsPerRequest = 3;
         }
 
         public void Login(string username, string password)
@@ -37,7 +73,7 @@ namespace Astalo
                 new KeyValuePair<string,string>("_csrf_token", CsrfToken)
             });
 
-            var response = Client.PostAsync(uri, formContent).Result;
+            var response = SendRetryAsync(HttpMethod.Post, uri, formContent).Result;
         }
 
         public bool IsLoggedIn()
@@ -47,21 +83,14 @@ namespace Astalo
             // response.RequestMessage.RequestUri is the Uri of the login page, session is not logged in.
 
             var uri = new Uri(new Uri(BaseUrl), "/yleiskatsaus/");
-            var response = Client.GetAsync(uri).Result;
+            var response = SendRetryAsync(HttpMethod.Get, uri).Result;
             return response.RequestMessage?.RequestUri?.AbsoluteUri != "https://entropy.fi/login";
-        }
-
-        public HttpResponseMessage Get(string route)
-        {
-            var uri = new Uri(new Uri(BaseUrl), route);
-
-            return Client.GetAsync(uri).Result;
         }
 
         private string GetOpenDoorToken() {
             var uri = new Uri(new Uri(BaseUrl), DoorOpeningPath);
 
-            var response = Client.GetAsync(uri).Result;
+            var response = SendRetryAsync(HttpMethod.Get, uri, null, false).Result;
             if (response.StatusCode == HttpStatusCode.Forbidden) {
                 throw new NotConnectedToKerdeWifiException();
             }
@@ -79,7 +108,7 @@ namespace Astalo
             var token = GetOpenDoorToken();
             var uri = new Uri(new Uri(BaseUrl), DoorOpeningPath);
 
-            var response = Client.PostAsync(uri, new FormUrlEncodedContent(new[] {
+            var response = SendRetryAsync(HttpMethod.Post, uri, new FormUrlEncodedContent(new[] {
                 new KeyValuePair<string, string>("open_door[message]", message),
                 new KeyValuePair<string, string>("open_door[_token]", token)
             })).Result;
@@ -92,7 +121,7 @@ namespace Astalo
         public string GetCsrfTokenFromLoginPage()
         {
             var uri = new Uri(new Uri(BaseUrl), LoginPath);
-            var loginPageResponse = Client.GetAsync(uri).Result;
+            var loginPageResponse = SendRetryAsync(HttpMethod.Get, uri).Result;
             loginPageResponse.EnsureSuccessStatusCode();
             var doc = new HtmlAgilityPack.HtmlDocument();
             doc.Load(loginPageResponse.Content.ReadAsStream());
@@ -119,5 +148,12 @@ namespace Astalo
     public class CantFindTokenElementException : Exception {
         public string Element { get; set; } = "";
     }
-
+    public class MaxRetriesException : Exception
+    {
+        public Uri Uri { get; set; }
+        public MaxRetriesException(Uri uri) : base()
+        {
+            Uri = uri;
+        }
+    }
 }
